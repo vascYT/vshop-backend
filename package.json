@@ -6,28 +6,26 @@
   "author": "vasc",
   "license": "MIT",
   "scripts": {
-    "start": "tsc && node build/index.js",
+    "start": "rimraf build && tsc && node build/index.js",
     "start:dev": "nodemon",
     "build": "tsc",
     "prisma:push": "prisma db push",
-    "prisma:generate": "prisma generate"
+    "prisma:gen": "prisma generate",
+    "clean": "rimraf build"
   },
   "devDependencies": {
     "@types/express": "^4.17.13",
     "@types/node": "^17.0.10",
-    "@types/tough-cookie": "^4.0.1",
     "nodemon": "^2.0.15",
     "prisma": "^3.9.2",
+    "rimraf": "^3.0.2",
     "ts-node": "^10.4.0",
     "typescript": "^4.5.4"
   },
   "dependencies": {
     "@prisma/client": "^3.9.2",
-    "axios": "^0.26.0",
-    "axios-cookiejar-support": "^2.0.3",
     "cors": "^2.8.5",
     "dotenv": "^14.2.0",
-    "express": "^4.17.2",
-    "tough-cookie": "^4.0.0"
+    "express": "^4.17.2"
   }
 }

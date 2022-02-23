@@ -1,5 +1,3 @@
-declare module "cloudflare-bypasser";
-
 interface user {
   name: string;
   loading: boolean;
