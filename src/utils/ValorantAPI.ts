@@ -2,8 +2,6 @@ import { fetch } from "./misc";
 import { ValorantIds } from "./misc";
 
 export default class ValorantAPI {
-  public offers: any = {};
-
   public username = "";
   public userId = "";
   public region = "";
@@ -19,31 +17,17 @@ export default class ValorantAPI {
 
   public async init() {
     let res1 = await fetch(this.getUrl("userinfo"), {
-      method: "POST",
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${this.accessToken}`,
       },
     });
     this.userId = res1.body.sub;
-
-    let res2 = await fetch(this.getUrl("offers"), {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Riot-Entitlements-JWT": this.entitlementsToken,
-        Authorization: `Bearer ${this.accessToken}`,
-      },
-    });
-
-    for (var i = 0; i < res2.body.Offers.length; i++) {
-      let offer = res2.body.Offers[i];
-      this.offers[offer.OfferID] = offer.Cost[ValorantIds.VP];
-    }
   }
 
   public async getShop() {
-    let res = await fetch(this.getUrl("storefront"), {
+    const res = await fetch(this.getUrl("storefront"), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -51,6 +35,21 @@ export default class ValorantAPI {
         Authorization: `Bearer ${this.accessToken}`,
       },
     });
+
+    const res2 = await fetch(this.getUrl("offers"), {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Riot-Entitlements-JWT": this.entitlementsToken,
+        Authorization: `Bearer ${this.accessToken}`,
+      },
+    });
+
+    let offers: { [offerId: string]: number } = {};
+    for (var i = 0; i < res2.body.Offers.length; i++) {
+      const offer = res2.body.Offers[i];
+      offers[offer.OfferID] = offer.Cost[ValorantIds.VP];
+    }
 
     let singleItemOffers = res.body.SkinsPanelLayout.SingleItemOffers;
     let shop: singleItem[] = [];
@@ -63,7 +62,7 @@ export default class ValorantAPI {
           }
         )
       ).body.data;
-      shop[i].price = this.offers[shop[i].uuid];
+      shop[i].price = offers[shop[i].uuid];
     }
 
     return shop;

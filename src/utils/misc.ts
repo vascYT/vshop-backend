@@ -55,6 +55,9 @@ export const fetch = (
           try {
             response.body = JSON.parse(response.body);
           } finally {
+            console.log(
+              `${options.method} request to ${url} done with status code ${response.status}`
+            );
             resolve(response);
           }
         });

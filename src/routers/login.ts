@@ -24,14 +24,12 @@ router.post("/", async (req, res) => {
         }),
       }
     );
-    let cookie = response.headers["set-cookie"];
-    console.log("Opt in done");
 
     response = await fetch("https://auth.riotgames.com/api/v1/authorization", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        cookie,
+        cookie: response.headers["set-cookie"],
       },
       body: JSON.stringify({
         type: "auth",
@@ -42,35 +40,25 @@ router.post("/", async (req, res) => {
 
     if (response.body.error === "auth_failure")
       res.json({
+        success: false,
         error: "Your username or password is incorrect",
       });
     else if (response.body.error === "rate_limited")
       res.json({
+        success: false,
         error: "Thats a little to fast, please try again later.",
       });
     else if (response.body.type === "multifactor") {
       res.json({
         mfaRequired: true,
         mfaEmail: response.body.multifactor.email,
+        cookie: response.headers["set-cookie"],
       });
     } else if (response.body.type === "response") {
       const accessToken = response.body.response.parameters.uri.match(
         /access_token=((?:[a-zA-Z]|\d|\.|-|_)*).*id_token=((?:[a-zA-Z]|\d|\.|-|_)*).*expires_in=(\d*)/
       )[1];
-      console.log("Login done");
-
-      response = await fetch(
-        "https://entitlements.auth.riotgames.com/api/token/v1",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      const entitlementsToken = response.body.entitlements_token;
-      console.log("Entitlements done");
+      const entitlementsToken = await getEntitlementsToken(accessToken);
 
       res.json({
         success: true,
@@ -88,5 +76,49 @@ router.post("/", async (req, res) => {
     });
   }
 });
+
+router.post("/mfa", async (req, res) => {
+  const response = await fetch(
+    "https://auth.riotgames.com/api/v1/authorization",
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: req.body.cookie,
+      },
+      body: JSON.stringify({
+        type: "multifactor",
+        code: req.body.code,
+        rememberDevice: false,
+      }),
+    }
+  );
+
+  if (response.body.type === "response") {
+    const accessToken = response.body.response.parameters.uri.match(
+      /access_token=((?:[a-zA-Z]|\d|\.|-|_)*).*id_token=((?:[a-zA-Z]|\d|\.|-|_)*).*expires_in=(\d*)/
+    )[1];
+    const entitlementsToken = await getEntitlementsToken(accessToken);
+    res.json({ success: true, accessToken, entitlementsToken });
+  } else if (response.body.type === "multifactor_attempt_failed") {
+    res.json({ success: false, error: "Your code is incorrect" });
+  } else {
+    res.json({ success: false, error: "An unknown error occured" });
+  }
+});
+
+const getEntitlementsToken = async (accessToken: string) => {
+  const response = await fetch(
+    "https://entitlements.auth.riotgames.com/api/token/v1",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  return response.body.entitlements_token;
+};
 
 export { router, path };
