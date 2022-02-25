@@ -1,4 +1,5 @@
 import { fetch } from "./misc";
+import { ValorantIds } from "./misc";
 
 export default class ValorantAPI {
   public offers: any = {};
@@ -17,7 +18,7 @@ export default class ValorantAPI {
   }
 
   public async init() {
-    let res1: any = await fetch(this.getUrl("userinfo"), {
+    let res1 = await fetch(this.getUrl("userinfo"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -26,7 +27,7 @@ export default class ValorantAPI {
     });
     this.userId = res1.body.sub;
 
-    let res2: any = await fetch(this.getUrl("offers"), {
+    let res2 = await fetch(this.getUrl("offers"), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -37,32 +38,30 @@ export default class ValorantAPI {
 
     for (var i = 0; i < res2.body.Offers.length; i++) {
       let offer = res2.body.Offers[i];
-      this.offers[offer.OfferID] =
-        offer.Cost["85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741"];
+      this.offers[offer.OfferID] = offer.Cost[ValorantIds.VP];
     }
   }
 
   public async getShop() {
-    let res: any = await fetch(this.getUrl("storefront"), {
+    let res = await fetch(this.getUrl("storefront"), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         "X-Riot-Entitlements-JWT": this.entitlementsToken,
         Authorization: `Bearer ${this.accessToken}`,
       },
-      withCredentials: true,
     });
 
     let singleItemOffers = res.body.SkinsPanelLayout.SingleItemOffers;
     let shop: singleItem[] = [];
     for (var i = 0; i < singleItemOffers.length; i++) {
       shop[i] = (
-        (await fetch(
+        await fetch(
           `https://valorant-api.com/v1/weapons/skinlevels/${singleItemOffers[i]}`,
           {
             method: "GET",
           }
-        )) as any
+        )
       ).body.data;
       shop[i].price = this.offers[shop[i].uuid];
     }
@@ -71,14 +70,13 @@ export default class ValorantAPI {
   }
 
   public async getNightMarket() {
-    const shop: any = await fetch(this.getUrl("storefront"), {
+    const shop = await fetch(this.getUrl("storefront"), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         "X-Riot-Entitlements-JWT": this.entitlementsToken,
         Authorization: `Bearer ${this.accessToken}`,
       },
-      withCredentials: true,
     });
 
     var nightShop = shop.body.BonusStore.BonusStoreOffers;
@@ -88,17 +86,15 @@ export default class ValorantAPI {
     for (var i = 0; i < nightShop.length; i++) {
       let itemid = nightShop[i].Offer.Rewards[0].ItemID;
       arr[i] = (
-        (await fetch(
+        await fetch(
           `https://valorant-api.com/v1/weapons/skinlevels/${itemid}`,
           {
             method: "GET",
           }
-        )) as any
+        )
       ).body.data;
-      arr[i].price =
-        nightShop[i].Offer.Cost["85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741"];
-      arr[i].discountPrice =
-        nightShop[i].DiscountCosts["85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741"];
+      arr[i].price = nightShop[i].Offer.Cost[ValorantIds.VP];
+      arr[i].discountPrice = nightShop[i].DiscountCosts[ValorantIds.VP];
       arr[i].discountPercent = nightShop[i].DiscountPercent;
     }
 
@@ -106,7 +102,7 @@ export default class ValorantAPI {
   }
 
   public async getBundle() {
-    const shop: any = await fetch(this.getUrl("storefront"), {
+    const shop = await fetch(this.getUrl("storefront"), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -116,15 +112,15 @@ export default class ValorantAPI {
     });
 
     let bundle: Bundle = (
-      (await fetch(
-        `https://valorant-api.com/v1/bundles/${shop.FeaturedBundle.Bundle.DataAssetID}`,
+      await fetch(
+        `https://valorant-api.com/v1/bundles/${shop.body.FeaturedBundle.Bundle.DataAssetID}`,
         {
           method: "GET",
         }
-      )) as any
+      )
     ).body;
 
-    bundle.price = shop.FeaturedBundle.Bundle.Items.map(
+    bundle.price = shop.body.FeaturedBundle.Bundle.Items.map(
       (item: any) => item.DiscountedPrice
     ).reduce((a: any, b: any) => a + b);
 

@@ -1,6 +1,7 @@
+import { IncomingHttpHeaders } from "http";
 import https from "https";
 
-// tlsChiphers from SkinPeek (https://github.com/giorgi-o/SkinPeek/blob/f26d84533b10419399010db63db00a6e9a5dd420/misc/util.js#L4)
+// credit for tlsCiphers: skinPeek (https://github.com/giorgi-o/SkinPeek/blob/f26d84533b10419399010db63db00a6e9a5dd420/misc/util.js#L4)
 const tlsCiphers = [
   "TLS_AES_128_GCM_SHA256",
   "TLS_AES_256_GCM_SHA384",
@@ -19,8 +20,15 @@ const tlsCiphers = [
   "TLS_RSA_WITH_AES_256_CBC_SHA",
 ];
 
-export const fetch = (url: string, options = {} as any) => {
-  return new Promise((resolve, reject) => {
+export const fetch = (
+  url: string,
+  options: { method: string; headers?: object; body?: object | string }
+) => {
+  return new Promise<{
+    status: number | undefined;
+    headers: IncomingHttpHeaders;
+    body: any;
+  }>((resolve, reject) => {
     const req = https.request(
       url,
       {
@@ -46,11 +54,9 @@ export const fetch = (url: string, options = {} as any) => {
         res.on("end", () => {
           try {
             response.body = JSON.parse(response.body);
-          } catch (e) {
-            response.body = response.body;
+          } finally {
+            resolve(response);
           }
-
-          resolve(response);
         });
       }
     );
@@ -62,4 +68,8 @@ export const fetch = (url: string, options = {} as any) => {
     if (options.body) req.write(options.body);
     req.end();
   });
+};
+
+export const ValorantIds = {
+  VP: "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741",
 };
