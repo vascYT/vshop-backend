@@ -1,10 +1,8 @@
 import express from "express";
 import ValorantAPI from "../utils/ValorantAPI";
-import { PrismaClient } from "@prisma/client";
 
 const router = express.Router();
-const path = "/shop";
-const prisma = new PrismaClient();
+const path = "/wallet";
 
 router.get("/", async (req, res) => {
   const { riotaccesstoken, riotentitlementstoken, region } = req.headers as any;
@@ -12,26 +10,9 @@ router.get("/", async (req, res) => {
 
   try {
     await api.init();
-    const shop: any = await api.getShop();
+    const wallet = await api.getWallet();
 
-    // Save market in database
-    await prisma.user.upsert({
-      where: {
-        riotId: api.userId,
-      },
-      update: {
-        riotId: api.userId,
-        shop,
-        lastUpdate: new Date(),
-      },
-      create: {
-        riotId: api.userId,
-        name: api.username,
-        shop,
-      },
-    });
-
-    res.json({ success: true, shop });
+    res.json({ success: true, wallet });
   } catch (error: any) {
     console.log(error);
     res.status(500).json({

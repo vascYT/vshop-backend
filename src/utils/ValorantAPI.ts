@@ -1,5 +1,5 @@
 import { fetch } from "./misc";
-import { ValorantIds } from "./misc";
+import { VCurrencies } from "./misc";
 
 export default class ValorantAPI {
   public username = "";
@@ -48,7 +48,7 @@ export default class ValorantAPI {
     let offers: { [offerId: string]: number } = {};
     for (var i = 0; i < res2.body.Offers.length; i++) {
       const offer = res2.body.Offers[i];
-      offers[offer.OfferID] = offer.Cost[ValorantIds.VP];
+      offers[offer.OfferID] = offer.Cost[VCurrencies.VP];
     }
 
     let singleItemOffers = res.body.SkinsPanelLayout.SingleItemOffers;
@@ -69,7 +69,7 @@ export default class ValorantAPI {
   }
 
   public async getNightMarket() {
-    const shop = await fetch(this.getUrl("storefront"), {
+    const res = await fetch(this.getUrl("storefront"), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -78,8 +78,8 @@ export default class ValorantAPI {
       },
     });
 
-    var nightShop = shop.body.BonusStore.BonusStoreOffers;
-    if (!nightShop) return []; // Hopefully this works, bc idk what the api returns if there is no night shop
+    if (!res.body.BonusStore) return [];
+    var nightShop = res.body.BonusStore.BonusStoreOffers;
 
     var arr = [];
     for (var i = 0; i < nightShop.length; i++) {
@@ -92,12 +92,45 @@ export default class ValorantAPI {
           }
         )
       ).body.data;
-      arr[i].price = nightShop[i].Offer.Cost[ValorantIds.VP];
-      arr[i].discountPrice = nightShop[i].DiscountCosts[ValorantIds.VP];
+      arr[i].price = nightShop[i].Offer.Cost[VCurrencies.VP];
+      arr[i].discountPrice = nightShop[i].DiscountCosts[VCurrencies.VP];
       arr[i].discountPercent = nightShop[i].DiscountPercent;
     }
 
     return arr as singleNightMarketItem[];
+  }
+
+  public async getWallet() {
+    const res = await fetch(this.getUrl("wallet"), {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Riot-Entitlements-JWT": this.entitlementsToken,
+        Authorization: `Bearer ${this.accessToken}`,
+      },
+    });
+
+    return {
+      vp: res.body.Balances[VCurrencies.VP],
+      rad: res.body.Balances[VCurrencies.RAD],
+      fag: res.body.Balances[VCurrencies.FAG],
+    };
+  }
+
+  public async getProgress() {
+    const res = await fetch(this.getUrl("playerxp"), {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Riot-Entitlements-JWT": this.entitlementsToken,
+        Authorization: `Bearer ${this.accessToken}`,
+      },
+    });
+
+    return {
+      level: res.body.Progress.Level,
+      xp: res.body.Progress.XP,
+    };
   }
 
   public async getBundle() {
@@ -133,6 +166,7 @@ export default class ValorantAPI {
       userinfo: "https://auth.riotgames.com/userinfo/",
       storefront: `https://pd.${this.region}.a.pvp.net/store/v2/storefront/${this.userId}`,
       wallet: `https://pd.${this.region}.a.pvp.net/store/v1/wallet/${this.userId}`,
+      playerxp: `https://pd.${this.region}.a.pvp.net/account-xp/v1/players/${this.userId}`,
       weapons: "https://valorant-api.com/v1/weapons/",
       offers: `https://pd.${this.region}.a.pvp.net/store/v1/offers/`,
       playerId: `https://pd.${this.region}.a.pvp.net/name-service/v2/players/`,

@@ -3,7 +3,7 @@ import ValorantAPI from "../utils/ValorantAPI";
 import { PrismaClient } from "@prisma/client";
 
 const router = express.Router();
-const path = "/shop";
+const path = "/nightmarket";
 const prisma = new PrismaClient();
 
 router.get("/", async (req, res) => {
@@ -12,7 +12,7 @@ router.get("/", async (req, res) => {
 
   try {
     await api.init();
-    const shop: any = await api.getShop();
+    const nightMarket: any = await api.getNightMarket();
 
     // Save market in database
     await prisma.user.upsert({
@@ -21,17 +21,17 @@ router.get("/", async (req, res) => {
       },
       update: {
         riotId: api.userId,
-        shop,
+        nightMarket,
         lastUpdate: new Date(),
       },
       create: {
         riotId: api.userId,
         name: api.username,
-        shop,
+        nightMarket,
       },
     });
 
-    res.json({ success: true, shop });
+    res.json({ success: true, nightMarket });
   } catch (error: any) {
     console.log(error);
     res.status(500).json({
