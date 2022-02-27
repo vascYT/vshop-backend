@@ -31,7 +31,7 @@ router.get("/", async (req, res) => {
       },
     });
 
-    res.json({ success: true, shop });
+    res.json({ success: true, ...shop });
   } catch (error: any) {
     console.log(error);
     res.status(500).json({

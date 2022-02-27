@@ -38,17 +38,12 @@ router.post("/", async (req, res) => {
       }),
     });
 
-    if (response.body.error === "auth_failure")
+    if (response.body.error) {
       res.json({
         success: false,
-        error: "Your username or password is incorrect",
+        error: response.body.error,
       });
-    else if (response.body.error === "rate_limited")
-      res.json({
-        success: false,
-        error: "Thats a little to fast, please try again later.",
-      });
-    else if (response.body.type === "multifactor") {
+    } else if (response.body.type === "multifactor") {
       res.json({
         mfaRequired: true,
         mfaEmail: response.body.multifactor.email,
@@ -65,8 +60,6 @@ router.post("/", async (req, res) => {
         accessToken,
         entitlementsToken,
       });
-    } else {
-      res.json({ error: "Oops, an unkown error occoured." });
     }
   } catch (error: any) {
     console.log(error);
@@ -94,16 +87,18 @@ router.post("/mfa", async (req, res) => {
     }
   );
 
+  console.log(response.body);
+
   if (response.body.type === "response") {
     const accessToken = response.body.response.parameters.uri.match(
       /access_token=((?:[a-zA-Z]|\d|\.|-|_)*).*id_token=((?:[a-zA-Z]|\d|\.|-|_)*).*expires_in=(\d*)/
     )[1];
     const entitlementsToken = await getEntitlementsToken(accessToken);
     res.json({ success: true, accessToken, entitlementsToken });
-  } else if (response.body.type === "multifactor_attempt_failed") {
-    res.json({ success: false, error: "Your code is incorrect" });
+  } else if (response.body.type) {
+    res.json({ success: false, error: response.body.type });
   } else {
-    res.json({ success: false, error: "An unknown error occured" });
+    res.json({ success: false, error: "unknown" });
   }
 });
 

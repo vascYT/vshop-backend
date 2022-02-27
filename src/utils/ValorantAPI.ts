@@ -65,7 +65,20 @@ export default class ValorantAPI {
       shop[i].price = offers[shop[i].uuid];
     }
 
-    return shop;
+    let bundle: Bundle = (
+      await fetch(
+        `https://valorant-api.com/v1/bundles/${res.body.FeaturedBundle.Bundle.DataAssetID}`,
+        {
+          method: "GET",
+        }
+      )
+    ).body.data;
+
+    bundle.price = res.body.FeaturedBundle.Bundle.Items.map(
+      (item: any) => item.DiscountedPrice
+    ).reduce((a: any, b: any) => a + b);
+
+    return { shop, bundle };
   }
 
   public async getNightMarket() {
@@ -131,32 +144,6 @@ export default class ValorantAPI {
       level: res.body.Progress.Level,
       xp: res.body.Progress.XP,
     };
-  }
-
-  public async getBundle() {
-    const shop = await fetch(this.getUrl("storefront"), {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Riot-Entitlements-JWT": this.entitlementsToken,
-        Authorization: `Bearer ${this.accessToken}`,
-      },
-    });
-
-    let bundle: Bundle = (
-      await fetch(
-        `https://valorant-api.com/v1/bundles/${shop.body.FeaturedBundle.Bundle.DataAssetID}`,
-        {
-          method: "GET",
-        }
-      )
-    ).body;
-
-    bundle.price = shop.body.FeaturedBundle.Bundle.Items.map(
-      (item: any) => item.DiscountedPrice
-    ).reduce((a: any, b: any) => a + b);
-
-    return bundle;
   }
 
   private getUrl(name: string) {
