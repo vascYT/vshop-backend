@@ -26,7 +26,6 @@ router.get("/", async (req, res) => {
       },
       create: {
         riotId: api.userId,
-        name: api.username,
         nightMarket,
       },
     });

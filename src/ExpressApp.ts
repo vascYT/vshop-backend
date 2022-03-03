@@ -2,6 +2,7 @@ import express from "express";
 import { promises } from "fs";
 import { join } from "path";
 import cors from "cors";
+
 const app = express();
 
 export default class ExpressApp {
@@ -10,7 +11,7 @@ export default class ExpressApp {
     app.use(express.json());
     app.use(
       cors({
-        origin: [/\.vshop\.one$/, /vshop.one$/],
+        origin: [/\.vshop\.one$/, "https://vshop.one"],
       })
     );
 

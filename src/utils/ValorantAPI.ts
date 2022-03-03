@@ -2,7 +2,6 @@ import { fetch } from "./misc";
 import { VCurrencies } from "./misc";
 
 export default class ValorantAPI {
-  public username = "";
   public userId = "";
   public region = "";
 
