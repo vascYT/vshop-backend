@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
     res.json({ success: true, wallet });
   } catch (error: any) {
     console.log(error);
-    res.status(500).json({
+    res.status(400).json({
       success: false,
       error: "An error occured",
     });

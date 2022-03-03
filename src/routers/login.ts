@@ -39,7 +39,7 @@ router.post("/", async (req, res) => {
     });
 
     if (response.body.error) {
-      res.json({
+      res.status(400).json({
         success: false,
         error: response.body.error,
       });
@@ -63,7 +63,7 @@ router.post("/", async (req, res) => {
     }
   } catch (error: any) {
     console.log(error);
-    res.status(500).json({
+    res.status(400).json({
       success: false,
       error: "An unknown error occured",
     });
@@ -94,9 +94,9 @@ router.post("/mfa", async (req, res) => {
     const entitlementsToken = await getEntitlementsToken(accessToken);
     res.json({ success: true, accessToken, entitlementsToken });
   } else if (response.body.type) {
-    res.json({ success: false, error: response.body.type });
+    res.status(400).json({ success: false, error: response.body.type });
   } else {
-    res.json({ success: false, error: "unknown" });
+    res.status(400).json({ success: false, error: "unknown" });
   }
 });
 
