@@ -87,8 +87,6 @@ router.post("/mfa", async (req, res) => {
     }
   );
 
-  console.log(response.body);
-
   if (response.body.type === "response") {
     const accessToken = response.body.response.parameters.uri.match(
       /access_token=((?:[a-zA-Z]|\d|\.|-|_)*).*id_token=((?:[a-zA-Z]|\d|\.|-|_)*).*expires_in=(\d*)/

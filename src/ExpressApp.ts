@@ -1,12 +1,19 @@
 import express from "express";
 import { promises } from "fs";
 import { join } from "path";
+import cors from "cors";
 const app = express();
 
 export default class ExpressApp {
   async init() {
     this.loadRouters();
     app.use(express.json());
+    app.use(
+      cors({
+        origin: [/\.vshop\.one$/, /vshop.one$/],
+      })
+    );
+
     app.listen(process.env.PORT || 3000, () => {
       console.log(`🆙 Listening http://localhost:${process.env.PORT || 3000}`);
     });
