@@ -11,9 +11,14 @@ export default class ExpressApp {
     app.use(express.json());
     app.use(
       cors({
-        origin: [/\.vshop\.one$/, "https://vshop.one"],
+        origin: [/\.vshop\.one$/, "https://vshop.one", "http://localhost:3000"],
       })
     );
+
+    // FOR TESTING
+    if (process.env.TRUST_PROXY)
+      app.set("trust proxy", parseInt(process.env.TRUST_PROXY));
+    app.get("/ip", (request, response) => response.send(request.ip));
 
     app.listen(process.env.PORT || 3000, () => {
       console.log(`🆙 Listening http://localhost:${process.env.PORT || 3000}`);
