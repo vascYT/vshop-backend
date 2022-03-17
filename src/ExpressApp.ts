@@ -23,12 +23,12 @@ export default class ExpressApp {
       standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
       legacyHeaders: false, // Disable the `X-RateLimit-*` headers
       keyGenerator: (req: Request, res: Response) =>
-        requestIp.getClientIp(req) || req.ip, // Use the IP address as the key
+        (req.headers["cf-connecting-ip"] as string) || req.ip, // Use the IP address as the key
     });
     app.use(limiter);
 
-    app.get("/ip", (req, res) => {
-      res.send(requestIp.getClientIp(req) || req.ip);
+    app.get("/headers", (req, res) => {
+      res.send(req.headers);
     });
 
     app.listen(process.env.PORT || 3000, () => {
