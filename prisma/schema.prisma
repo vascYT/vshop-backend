@@ -8,9 +8,10 @@ datasource db {
 }
 
 model user {
-  id          Int      @id @default(autoincrement())
-  riotId      String   @unique
-  shop        Json?
-  nightMarket Json?
-  lastUpdate  DateTime @default(now())
+  id                    Int      @id @default(autoincrement())
+  riotId                String   @unique
+  shop                  Json?
+  nightMarket           Json?
+  lastShopUpdate        DateTime @default(now())
+  lastNightMarketUpdate DateTime @default(now())
 }

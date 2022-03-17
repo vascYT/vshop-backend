@@ -12,25 +12,40 @@ router.get("/", async (req, res) => {
 
   try {
     await api.init();
-    const shop: any = await api.getShop();
-
-    // Save market in database
-    await prisma.user.upsert({
+    const dbUser = await prisma.user.findFirst({
       where: {
         riotId: api.userId,
       },
-      update: {
-        riotId: api.userId,
-        shop,
-        lastUpdate: new Date(),
-      },
-      create: {
-        riotId: api.userId,
-        shop,
-      },
     });
 
-    res.json({ success: true, ...shop });
+    if (
+      dbUser &&
+      dbUser.shop &&
+      dbUser.lastShopUpdate.getDate() === new Date().getDate()
+    ) {
+      // Return stored shop
+      res.json({ success: true, shop: dbUser.shop });
+    } else {
+      const shop: any = await api.getShop();
+
+      // Save market in database
+      await prisma.user.upsert({
+        where: {
+          riotId: api.userId,
+        },
+        update: {
+          riotId: api.userId,
+          shop,
+          lastShopUpdate: new Date(),
+        },
+        create: {
+          riotId: api.userId,
+          shop,
+        },
+      });
+
+      res.json({ success: true, ...shop });
+    }
   } catch (error: any) {
     console.log(error);
     res.status(400).json({
