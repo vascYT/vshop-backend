@@ -17,7 +17,12 @@ export default class ExpressApp {
 
     // FOR TESTING
     app.set("trust proxy", true);
-    app.get("/ip", (request, response) => response.send(request.ip));
+    app.get("/info", (request, response) =>
+      response.json({
+        ips: request.ips,
+        headers: request.headers,
+      })
+    );
 
     app.listen(process.env.PORT || 3000, () => {
       console.log(`🆙 Listening http://localhost:${process.env.PORT || 3000}`);
