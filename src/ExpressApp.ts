@@ -16,8 +16,7 @@ export default class ExpressApp {
     );
 
     // FOR TESTING
-    if (process.env.TRUST_PROXY)
-      app.set("trust proxy", parseInt(process.env.TRUST_PROXY));
+    app.set("trust proxy", true);
     app.get("/ip", (request, response) => response.send(request.ip));
 
     app.listen(process.env.PORT || 3000, () => {
