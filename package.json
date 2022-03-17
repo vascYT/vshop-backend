@@ -17,6 +17,7 @@
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
     "@types/node": "^17.0.10",
+    "@types/request-ip": "^0.0.37",
     "nodemon": "^2.0.15",
     "prisma": "^3.10.0",
     "rimraf": "^3.0.2",
@@ -27,6 +28,8 @@
     "@prisma/client": "^3.10.0",
     "cors": "^2.8.5",
     "dotenv": "^14.2.0",
-    "express": "^4.17.2"
+    "express": "^4.17.2",
+    "express-rate-limit": "^6.3.0",
+    "request-ip": "^2.1.3"
   }
 }

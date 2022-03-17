@@ -1,7 +1,9 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import { promises } from "fs";
 import { join } from "path";
 import cors from "cors";
+import rateLimit from "express-rate-limit";
+import requestIp from "request-ip";
 
 const app = express();
 
@@ -15,14 +17,19 @@ export default class ExpressApp {
       })
     );
 
-    // FOR TESTING
-    app.set("trust proxy", true);
-    app.get("/info", (request, response) =>
-      response.json({
-        ips: request.ips,
-        headers: request.headers,
-      })
-    );
+    const limiter = rateLimit({
+      windowMs: 60 * 1000, // 1 minute
+      max: 25, // Limit each IP to 25 requests per `window` (1 minute)
+      standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+      legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+      keyGenerator: (req: Request, res: Response) =>
+        requestIp.getClientIp(req) || req.ip, // Use the IP address as the key
+    });
+    app.use(limiter);
+
+    app.get("/ip", (req, res) => {
+      res.send(requestIp.getClientIp(req) || req.ip);
+    });
 
     app.listen(process.env.PORT || 3000, () => {
       console.log(`🆙 Listening http://localhost:${process.env.PORT || 3000}`);
