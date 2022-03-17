@@ -35,10 +35,6 @@ export default class ExpressApp {
     });
     app.use("/login", loginLimiter);
 
-    app.get("/headers", (req, res) => {
-      res.send(req.headers);
-    });
-
     app.listen(process.env.PORT || 3000, () => {
       console.log(`🆙 Listening http://localhost:${process.env.PORT || 3000}`);
     });
