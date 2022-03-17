@@ -28,7 +28,7 @@ export default class ExpressApp {
 
     const loginLimiter = rateLimit({
       windowMs: 60 * 1000, // 1 minute
-      max: 1,
+      max: 10,
       standardHeaders: true,
       legacyHeaders: false,
       keyGenerator: getIP,
