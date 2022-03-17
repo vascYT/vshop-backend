@@ -1,3 +1,4 @@
+import { Request, Response } from "express";
 import { IncomingHttpHeaders } from "http";
 import https from "https";
 
@@ -78,3 +79,6 @@ export const VCurrencies = {
   RAD: "e59aa87c-4cbf-517a-5983-6e81511be9b7", // Radianite Points
   FAG: "f08d4ae3-939c-4576-ab26-09ce1f23bb37", // Free Agents
 };
+
+export const getIP = (req: Request, res: Response) =>
+  (req.headers["cf-connecting-ip"] as string) || req.ip;

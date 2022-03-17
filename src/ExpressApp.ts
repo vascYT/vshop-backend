@@ -1,8 +1,9 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import { promises } from "fs";
 import { join } from "path";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
+import { getIP } from "./utils/misc";
 
 const app = express();
 
@@ -18,13 +19,21 @@ export default class ExpressApp {
 
     const limiter = rateLimit({
       windowMs: 60 * 1000, // 1 minute
-      max: 25, // Limit each IP to 25 requests per `window` (1 minute)
-      standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-      legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-      keyGenerator: (req: Request, res: Response) =>
-        (req.headers["cf-connecting-ip"] as string) || req.ip, // Use the IP address as the key
+      max: 25,
+      standardHeaders: true,
+      legacyHeaders: false,
+      keyGenerator: getIP,
     });
     app.use(limiter);
+
+    const loginLimiter = rateLimit({
+      windowMs: 60 * 1000, // 1 minute
+      max: 1,
+      standardHeaders: true,
+      legacyHeaders: false,
+      keyGenerator: getIP,
+    });
+    app.use("/login", loginLimiter);
 
     app.get("/headers", (req, res) => {
       res.send(req.headers);
