@@ -24,7 +24,7 @@ router.get("/", async (req, res) => {
       dbUser.lastNightMarketUpdate.getDate() === new Date().getDate()
     ) {
       // Return stored shop
-      res.json({ success: true, shop: dbUser.shop });
+      res.json({ success: true, ...(dbUser.nightMarket as any) });
     } else {
       const nightMarket: any = await api.getNightMarket();
 
