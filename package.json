@@ -6,12 +6,12 @@
   "author": "vasc",
   "license": "MIT",
   "scripts": {
-    "start": "rimraf build && tsc && node build/index.js",
-    "start:dev": "nodemon",
+    "start": "ts-node src/index.ts",
+    "dev": "nodemon",
     "build": "tsc",
+    "clean": "rimraf build",
     "prisma:push": "prisma db push",
-    "prisma:gen": "prisma generate",
-    "clean": "rimraf build"
+    "prisma:gen": "prisma generate"
   },
   "devDependencies": {
     "@types/cors": "^2.8.12",
