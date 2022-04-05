@@ -21,7 +21,8 @@ router.get("/", async (req, res) => {
     if (
       dbUser &&
       dbUser.nightMarket &&
-      dbUser.lastNightMarketUpdate.getDate() === new Date().getDate()
+      dbUser.lastNightMarketUpdate.getDate() === new Date().getDate() &&
+      dbUser.nightMarketRegion === region
     ) {
       // Return stored shop
       res.json({ success: true, nightMarket: dbUser.nightMarket });
@@ -37,10 +38,12 @@ router.get("/", async (req, res) => {
           riotId: api.userId,
           nightMarket,
           lastNightMarketUpdate: new Date(),
+          nightMarketRegion: region,
         },
         create: {
           riotId: api.userId,
           nightMarket,
+          nightMarketRegion: region,
         },
       });
 

@@ -21,7 +21,8 @@ router.get("/", async (req, res) => {
     if (
       dbUser &&
       dbUser.shop &&
-      dbUser.lastShopUpdate.getDate() === new Date().getDate()
+      dbUser.lastShopUpdate.getDate() === new Date().getDate() &&
+      dbUser.shopRegion === region
     ) {
       // Return stored shop
       res.json({ success: true, ...(dbUser.shop as any) });
@@ -37,10 +38,12 @@ router.get("/", async (req, res) => {
           riotId: api.userId,
           shop,
           lastShopUpdate: new Date(),
+          shopRegion: region,
         },
         create: {
           riotId: api.userId,
           shop,
+          shopRegion: region,
         },
       });
 
