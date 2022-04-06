@@ -58,6 +58,18 @@ router.post("/", async (req, res) => {
       const entitlementsToken = await getEntitlementsToken(accessToken);
       const riotId = await getId(accessToken);
 
+      // Create user if not exists
+      await prisma.user.upsert({
+        where: {
+          riotId,
+        },
+        create: {
+          riotId,
+        },
+        update: {},
+      });
+
+      // Link obtained accessToken to user profile
       await prisma.token.create({
         data: {
           token: accessToken,
@@ -102,6 +114,27 @@ router.post("/mfa", async (req, res) => {
       /access_token=((?:[a-zA-Z]|\d|\.|-|_)*).*id_token=((?:[a-zA-Z]|\d|\.|-|_)*).*expires_in=(\d*)/
     )[1];
     const entitlementsToken = await getEntitlementsToken(accessToken);
+    const riotId = await getId(accessToken);
+
+    // Create user if not exists
+    await prisma.user.upsert({
+      where: {
+        riotId,
+      },
+      create: {
+        riotId,
+      },
+      update: {},
+    });
+
+    // Link obtained accessToken to user profile
+    await prisma.token.create({
+      data: {
+        token: accessToken,
+        riotId,
+      },
+    });
+
     res.json({ success: true, accessToken, entitlementsToken });
   } else if (response.body.type) {
     res.status(400).json({ success: false, error: response.body.type });
