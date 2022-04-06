@@ -8,21 +8,16 @@ export default class ValorantAPI {
   private accessToken = "";
   private entitlementsToken = "";
 
-  constructor(accessToken: string, entitlementsToken: string, region: string) {
+  constructor(
+    accessToken: string,
+    entitlementsToken: string,
+    region: string,
+    userId: string
+  ) {
     this.accessToken = accessToken;
     this.entitlementsToken = entitlementsToken;
     this.region = region;
-  }
-
-  public async init() {
-    let res1 = await fetch(this.getUrl("userinfo"), {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${this.accessToken}`,
-      },
-    });
-    this.userId = res1.body.sub;
+    this.userId = userId;
   }
 
   public async getShop() {

@@ -8,24 +8,37 @@ const prisma = new PrismaClient();
 
 router.get("/", async (req, res) => {
   const { riotaccesstoken, riotentitlementstoken, region } = req.headers as any;
-  let api = new ValorantAPI(riotaccesstoken, riotentitlementstoken, region);
 
   try {
-    await api.init();
-    const dbUser = await prisma.user.findFirst({
+    const dbToken = await prisma.tokens.findFirst({
       where: {
-        riotId: api.userId,
+        token: riotaccesstoken,
+      },
+      include: {
+        user: true,
       },
     });
 
+    if (!dbToken)
+      return {
+        success: false,
+      };
+
+    let api = new ValorantAPI(
+      riotaccesstoken,
+      riotentitlementstoken,
+      region,
+      dbToken?.riotId || ""
+    );
+
     if (
-      dbUser &&
-      dbUser.shop &&
-      dbUser.lastShopUpdate.getDate() === new Date().getDate() &&
-      dbUser.shopRegion === region
+      dbToken.user &&
+      dbToken.user.shop &&
+      dbToken.user.lastShopUpdate.getDate() === new Date().getDate() &&
+      dbToken.user.shopRegion === region
     ) {
       // Return stored shop
-      res.json({ success: true, ...(dbUser.shop as any) });
+      res.json({ success: true, ...(dbToken.user.shop as any) });
     } else {
       const shop: any = await api.getShop();
 

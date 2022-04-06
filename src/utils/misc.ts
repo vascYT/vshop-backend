@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { IncomingHttpHeaders } from "http";
 import https from "https";
 
+var isRateLimited = false;
+
 // credit for tlsCiphers: skinPeek (https://github.com/giorgi-o/SkinPeek/blob/f26d84533b10419399010db63db00a6e9a5dd420/misc/util.js#L4)
 const tlsCiphers = [
   "TLS_AES_128_GCM_SHA256",
@@ -59,6 +61,12 @@ export const fetch = (
             console.log(
               `${options.method} request to ${url} done with status code ${response.status}`
             );
+
+            if (response.status === 429 && !isRateLimited) {
+              sendNotification("Server got rate limited :(");
+              isRateLimited = true;
+            }
+
             resolve(response);
           }
         });
@@ -78,6 +86,13 @@ export const VCurrencies = {
   VP: "85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741", // VP
   RAD: "e59aa87c-4cbf-517a-5983-6e81511be9b7", // Radianite Points
   FAG: "f08d4ae3-939c-4576-ab26-09ce1f23bb37", // Free Agents
+};
+
+const sendNotification = async (msg: string) => {
+  await fetch(process.env.WEBHOOK_URL || "", {
+    method: "POST",
+    body: JSON.stringify({ content: msg }),
+  });
 };
 
 export const getIP = (req: Request, res: Response) =>

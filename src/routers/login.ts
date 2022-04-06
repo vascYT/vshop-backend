@@ -1,8 +1,10 @@
+import { PrismaClient } from "@prisma/client";
 import express from "express";
 import { fetch } from "../utils/misc";
 
 const router = express.Router();
 const path = "/login";
+const prisma = new PrismaClient();
 
 router.post("/", async (req, res) => {
   const { username, password } = req.body;
@@ -54,6 +56,14 @@ router.post("/", async (req, res) => {
         /access_token=((?:[a-zA-Z]|\d|\.|-|_)*).*id_token=((?:[a-zA-Z]|\d|\.|-|_)*).*expires_in=(\d*)/
       )[1];
       const entitlementsToken = await getEntitlementsToken(accessToken);
+      const riotId = await getId(accessToken);
+
+      await prisma.tokens.create({
+        data: {
+          token: accessToken,
+          riotId,
+        },
+      });
 
       res.json({
         success: true,
@@ -112,6 +122,18 @@ const getEntitlementsToken = async (accessToken: string) => {
     }
   );
   return response.body.entitlements_token;
+};
+
+const getId = async (accessToken: string) => {
+  const res = await fetch("https://auth.riotgames.com/userinfo/", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  return res.body.sub as string;
 };
 
 export { router, path };

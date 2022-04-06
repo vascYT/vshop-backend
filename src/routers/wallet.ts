@@ -1,15 +1,35 @@
+import { PrismaClient } from "@prisma/client";
 import express from "express";
 import ValorantAPI from "../utils/ValorantAPI";
 
 const router = express.Router();
 const path = "/wallet";
+const prisma = new PrismaClient();
 
 router.get("/", async (req, res) => {
   const { riotaccesstoken, riotentitlementstoken, region } = req.headers as any;
-  let api = new ValorantAPI(riotaccesstoken, riotentitlementstoken, region);
 
   try {
-    await api.init();
+    const dbToken = await prisma.tokens.findFirst({
+      where: {
+        token: riotaccesstoken,
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    if (!dbToken)
+      return {
+        success: false,
+      };
+
+    let api = new ValorantAPI(
+      riotaccesstoken,
+      riotentitlementstoken,
+      region,
+      dbToken?.riotId || ""
+    );
     const wallet = await api.getWallet();
 
     res.json({ success: true, wallet });

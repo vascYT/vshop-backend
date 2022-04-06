@@ -16,4 +16,13 @@ model user {
   nightMarket           Json?
   nightMarketRegion     String   @default("eu")
   lastNightMarketUpdate DateTime @default(now())
+  tokens                tokens[]
+}
+
+model tokens {
+  id      Int      @id @default(autoincrement())
+  token   String   @db.VarChar(1000)
+  riotId  String
+  user    user     @relation(fields: [riotId], references: [riotId])
+  created DateTime @default(now())
 }

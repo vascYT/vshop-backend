@@ -6,7 +6,6 @@ import rateLimit from "express-rate-limit";
 import { getIP } from "./utils/misc";
 
 const app = express();
-
 export default class ExpressApp {
   async init() {
     this.loadRouters();
@@ -19,7 +18,7 @@ export default class ExpressApp {
 
     const limiter = rateLimit({
       windowMs: 60 * 1000, // 1 minute
-      max: 100,
+      max: 20,
       standardHeaders: true,
       legacyHeaders: false,
       keyGenerator: getIP,
@@ -27,8 +26,8 @@ export default class ExpressApp {
     app.use(limiter);
 
     const loginLimiter = rateLimit({
-      windowMs: 60 * 1000, // 1 minute
-      max: 10,
+      windowMs: 60 * 1000 * 10, // 10 minutes
+      max: 3,
       standardHeaders: true,
       legacyHeaders: false,
       keyGenerator: getIP,
