@@ -2,8 +2,6 @@ import { Request, Response } from "express";
 import { IncomingHttpHeaders } from "http";
 import https from "https";
 
-var isRateLimited = false;
-
 // credit for tlsCiphers: skinPeek (https://github.com/giorgi-o/SkinPeek/blob/f26d84533b10419399010db63db00a6e9a5dd420/misc/util.js#L4)
 const tlsCiphers = [
   "TLS_AES_128_GCM_SHA256",
@@ -57,14 +55,20 @@ export const fetch = (
         res.on("end", () => {
           try {
             response.body = JSON.parse(response.body);
+          } catch (e) {
+            response.body = response.body;
           } finally {
             console.log(
               `${options.method} request to ${url} done with status code ${response.status}`
             );
 
-            if (response.status === 429 && !isRateLimited) {
-              sendNotification("Server got rate limited :(");
-              isRateLimited = true;
+            if (response.status == 429) {
+              sendNotification(
+                `Server got rate limited :( <@346977366569910274>\n \`\`\`${JSON.stringify(
+                  response
+                )}\`\`\``
+              );
+              process.exit(1);
             }
 
             resolve(response);
@@ -92,6 +96,9 @@ const sendNotification = async (msg: string) => {
   await fetch(process.env.WEBHOOK_URL || "", {
     method: "POST",
     body: JSON.stringify({ content: msg }),
+    headers: {
+      "Content-Type": "application/json",
+    },
   });
 };
 
