@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model user {
+model User {
   id                    Int      @id @default(autoincrement())
   riotId                String   @unique
   shop                  Json?
@@ -16,13 +16,17 @@ model user {
   nightMarket           Json?
   nightMarketRegion     String   @default("eu")
   lastNightMarketUpdate DateTime @default(now())
-  tokens                tokens[]
+  tokens                Token[]
+
+  @@map("users")
 }
 
-model tokens {
+model Token {
   id      Int      @id @default(autoincrement())
   token   String   @db.VarChar(1000)
   riotId  String
-  user    user     @relation(fields: [riotId], references: [riotId])
+  user    User     @relation(fields: [riotId], references: [riotId])
   created DateTime @default(now())
+
+  @@map("tokens")
 }
