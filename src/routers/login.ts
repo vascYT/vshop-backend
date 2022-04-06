@@ -82,6 +82,7 @@ router.post("/", async (req, res) => {
         accessToken,
         entitlementsToken,
       });
+      console.log(`${riotId} log in done.`);
     }
   } catch (error: any) {
     console.log(error);
@@ -136,6 +137,7 @@ router.post("/mfa", async (req, res) => {
     });
 
     res.json({ success: true, accessToken, entitlementsToken });
+    console.log(`${riotId} log in done.`);
   } else if (response.body.type) {
     res.status(400).json({ success: false, error: response.body.type });
   } else {

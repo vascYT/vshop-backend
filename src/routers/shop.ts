@@ -19,11 +19,13 @@ router.get("/", async (req, res) => {
       },
     });
 
-    if (!dbToken)
-      return {
+    if (!dbToken) {
+      res.json({
         success: false,
         error: "Access token not found",
-      };
+      });
+      return;
+    }
 
     let api = new ValorantAPI(
       riotaccesstoken,
