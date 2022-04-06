@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 
 router.get("/", async (req, res) => {
   const { riotaccesstoken, riotentitlementstoken, region } = req.headers as any;
-  const dbToken = await prisma.tokens.findFirst({
+  const dbToken = await prisma.token.findFirst({
     where: {
       token: riotaccesstoken,
     },

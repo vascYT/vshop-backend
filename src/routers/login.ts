@@ -58,7 +58,7 @@ router.post("/", async (req, res) => {
       const entitlementsToken = await getEntitlementsToken(accessToken);
       const riotId = await getId(accessToken);
 
-      await prisma.tokens.create({
+      await prisma.token.create({
         data: {
           token: accessToken,
           riotId,
