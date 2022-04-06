@@ -67,8 +67,9 @@ export const fetch = (
                 `Server got rate limited :( <@346977366569910274>\n \`\`\`${JSON.stringify(
                   response
                 )}\`\`\``
-              );
-              process.exit(1);
+              ).then(() => {
+                process.exit(1);
+              });
             }
 
             resolve(response);
