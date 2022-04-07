@@ -86,68 +86,66 @@ export const throttledfetch = (
     status: number | undefined;
     headers: IncomingHttpHeaders;
     body: any;
-  }>((resolve, reject) => {
-    if (waiting) {
-      setTimeout(() => {
-        throttledfetch(url, options).then(resolve, reject);
-      });
-    } else {
-      const req = https.request(
-        url,
-        {
-          method: options.method,
-          headers: {
-            ...options.headers,
-            "User-Agent":
-              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
-          },
-          ciphers: tlsCiphers.join(":"),
-        },
-        (res) => {
-          let response = {
-            status: res.statusCode,
-            headers: res.headers,
-            body: "",
-          };
-
-          res.on("data", (chunk) => {
-            response.body += chunk;
-          });
-
-          res.on("end", () => {
-            try {
-              response.body = JSON.parse(response.body);
-            } catch (e) {
-              response.body = response.body;
-            } finally {
-              console.log(
-                `${options.method} request to ${url} done with status code ${response.status}`
-              );
-
-              waiting = true;
-              if (response.status == 429) {
-                setTimeout(() => {
-                  waiting = false;
-                }, 10000);
-              } else {
-                setTimeout(() => {
-                  waiting = false;
-                }, 700);
-              }
-
-              resolve(response);
-            }
-          });
-        }
-      );
-
-      req.on("error", (err) => {
-        reject(err);
-      });
-
-      if (options.body) req.write(options.body);
-      req.end();
+  }>(async (resolve, reject) => {
+    while (waiting) {
+      await new Promise((resolve) => setTimeout(resolve, 700));
     }
+
+    const req = https.request(
+      url,
+      {
+        method: options.method,
+        headers: {
+          ...options.headers,
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        },
+        ciphers: tlsCiphers.join(":"),
+      },
+      (res) => {
+        let response = {
+          status: res.statusCode,
+          headers: res.headers,
+          body: "",
+        };
+
+        res.on("data", (chunk) => {
+          response.body += chunk;
+        });
+
+        res.on("end", () => {
+          try {
+            response.body = JSON.parse(response.body);
+          } catch (e) {
+            response.body = response.body;
+          } finally {
+            console.log(
+              `${options.method} request to ${url} done with status code ${response.status}`
+            );
+
+            waiting = true;
+            if (response.status == 429) {
+              setTimeout(() => {
+                waiting = false;
+              }, 10000);
+            } else {
+              setTimeout(() => {
+                waiting = false;
+              }, 700);
+            }
+
+            resolve(response);
+          }
+        });
+      }
+    );
+
+    req.on("error", (err) => {
+      reject(err);
+    });
+
+    if (options.body) req.write(options.body);
+    req.end();
   });
 };
 
