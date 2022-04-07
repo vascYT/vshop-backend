@@ -1,4 +1,4 @@
-import { fetch, throttledfetch } from "./misc";
+import { fetch } from "./misc";
 import { VCurrencies } from "./misc";
 
 export default class ValorantAPI {
@@ -21,7 +21,7 @@ export default class ValorantAPI {
   }
 
   public async getShop() {
-    const res = await throttledfetch(this.getUrl("storefront"), {
+    const res = await fetch(this.getUrl("storefront"), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -76,7 +76,7 @@ export default class ValorantAPI {
   }
 
   public async getNightMarket() {
-    const res = await throttledfetch(this.getUrl("storefront"), {
+    const res = await fetch(this.getUrl("storefront"), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -108,7 +108,7 @@ export default class ValorantAPI {
   }
 
   public async getWallet() {
-    const res = await throttledfetch(this.getUrl("wallet"), {
+    const res = await fetch(this.getUrl("wallet"), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -125,7 +125,7 @@ export default class ValorantAPI {
   }
 
   public async getProgress() {
-    const res = await throttledfetch(this.getUrl("playerxp"), {
+    const res = await fetch(this.getUrl("playerxp"), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

@@ -88,6 +88,7 @@ export const throttledfetch = (
     body: any;
   }>(async (resolve, reject) => {
     while (waiting) {
+      console.log(`Delaying ${options.method} request to ${url}`);
       await new Promise((resolve) => setTimeout(resolve, 700));
     }
 
@@ -127,10 +128,12 @@ export const throttledfetch = (
             if (response.status == 429) {
               setTimeout(() => {
                 waiting = false;
+                console.log("Resuming requests");
               }, 10000);
             } else {
               setTimeout(() => {
                 waiting = false;
+                console.log("Resuming requests");
               }, 700);
             }
 
