@@ -61,17 +61,6 @@ export const fetch = (
             console.log(
               `${options.method} request to ${url} done with status code ${response.status}`
             );
-
-            if (response.status == 429) {
-              sendNotification(
-                `Server got rate limited :( <@346977366569910274>\n \`\`\`${JSON.stringify(
-                  response
-                )}\`\`\``
-              ).then(() => {
-                process.exit(1);
-              });
-            }
-
             resolve(response);
           }
         });
@@ -84,6 +73,81 @@ export const fetch = (
 
     if (options.body) req.write(options.body);
     req.end();
+  });
+};
+
+var waiting = false;
+export const throttledfetch = (
+  // Function can only be called once every 700ms
+  url: string,
+  options: { method: string; headers?: object; body?: object | string }
+) => {
+  return new Promise<{
+    status: number | undefined;
+    headers: IncomingHttpHeaders;
+    body: any;
+  }>((resolve, reject) => {
+    if (waiting) {
+      setTimeout(() => {
+        throttledfetch(url, options).then(resolve, reject);
+      });
+    } else {
+      const req = https.request(
+        url,
+        {
+          method: options.method,
+          headers: {
+            ...options.headers,
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+          },
+          ciphers: tlsCiphers.join(":"),
+        },
+        (res) => {
+          let response = {
+            status: res.statusCode,
+            headers: res.headers,
+            body: "",
+          };
+
+          res.on("data", (chunk) => {
+            response.body += chunk;
+          });
+
+          res.on("end", () => {
+            try {
+              response.body = JSON.parse(response.body);
+            } catch (e) {
+              response.body = response.body;
+            } finally {
+              console.log(
+                `${options.method} request to ${url} done with status code ${response.status}`
+              );
+
+              waiting = true;
+              if (response.status == 429) {
+                setTimeout(() => {
+                  waiting = false;
+                }, 10000);
+              } else {
+                setTimeout(() => {
+                  waiting = false;
+                }, 700);
+              }
+
+              resolve(response);
+            }
+          });
+        }
+      );
+
+      req.on("error", (err) => {
+        reject(err);
+      });
+
+      if (options.body) req.write(options.body);
+      req.end();
+    }
   });
 };
 

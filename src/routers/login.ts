@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
-import { fetch } from "../utils/misc";
+import { fetch, throttledfetch } from "../utils/misc";
 
 const router = express.Router();
 const path = "/login";
@@ -10,7 +10,7 @@ router.post("/", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    let response: any = await fetch(
+    let response: any = await throttledfetch(
       "https://auth.riotgames.com/api/v1/authorization",
       {
         method: "POST",
@@ -27,18 +27,21 @@ router.post("/", async (req, res) => {
       }
     );
 
-    response = await fetch("https://auth.riotgames.com/api/v1/authorization", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        cookie: response.headers["set-cookie"],
-      },
-      body: JSON.stringify({
-        type: "auth",
-        username,
-        password,
-      }),
-    });
+    response = await throttledfetch(
+      "https://auth.riotgames.com/api/v1/authorization",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          cookie: response.headers["set-cookie"],
+        },
+        body: JSON.stringify({
+          type: "auth",
+          username,
+          password,
+        }),
+      }
+    );
 
     if (response.body.error) {
       res.status(400).json({
@@ -94,7 +97,7 @@ router.post("/", async (req, res) => {
 });
 
 router.post("/mfa", async (req, res) => {
-  const response = await fetch(
+  const response = await throttledfetch(
     "https://auth.riotgames.com/api/v1/authorization",
     {
       method: "PUT",
@@ -146,7 +149,7 @@ router.post("/mfa", async (req, res) => {
 });
 
 const getEntitlementsToken = async (accessToken: string) => {
-  const response = await fetch(
+  const response = await throttledfetch(
     "https://entitlements.auth.riotgames.com/api/token/v1",
     {
       method: "POST",
@@ -160,7 +163,7 @@ const getEntitlementsToken = async (accessToken: string) => {
 };
 
 const getId = async (accessToken: string) => {
-  const res = await fetch("https://auth.riotgames.com/userinfo/", {
+  const res = await throttledfetch("https://auth.riotgames.com/userinfo/", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
