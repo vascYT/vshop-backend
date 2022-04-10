@@ -19,7 +19,7 @@ router.get("/", async (req, res) => {
       },
     });
     if (!dbToken) {
-      res.json({
+      res.status(401).json({
         success: false,
         error: "Access token not found",
       });
