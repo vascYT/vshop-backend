@@ -39,6 +39,7 @@ export default class ValorantAPI {
       },
     });
 
+    /* SHOP */
     let offers: { [offerId: string]: number } = {};
     for (var i = 0; i < res2.body.Offers.length; i++) {
       const offer = res2.body.Offers[i];
@@ -59,6 +60,7 @@ export default class ValorantAPI {
       shop[i].price = offers[shop[i].uuid];
     }
 
+    /* BUNDLE */
     let bundle: Bundle = (
       await fetch(
         `https://valorant-api.com/v1/bundles/${res.body.FeaturedBundle.Bundle.DataAssetID}`,
@@ -72,26 +74,15 @@ export default class ValorantAPI {
       (item: any) => item.DiscountedPrice
     ).reduce((a: any, b: any) => a + b);
 
-    return { shop, bundle };
-  }
+    /* NIGHT MARKET */
+    const bonusStore = res.body.BonusStore
+      ? res.body.BonusStore.BonusStoreOffers
+      : [];
 
-  public async getNightMarket() {
-    const res = await fetch(this.getUrl("storefront"), {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Riot-Entitlements-JWT": this.entitlementsToken,
-        Authorization: `Bearer ${this.accessToken}`,
-      },
-    });
-
-    if (!res.body.BonusStore) return [];
-    var nightShop = res.body.BonusStore.BonusStoreOffers;
-
-    var arr = [];
-    for (var i = 0; i < nightShop.length; i++) {
-      let itemid = nightShop[i].Offer.Rewards[0].ItemID;
-      arr[i] = (
+    let nightMarket = [];
+    for (var i = 0; i < bonusStore.length; i++) {
+      let itemid = bonusStore[i].Offer.Rewards[0].ItemID;
+      nightMarket[i] = (
         await fetch(
           `https://valorant-api.com/v1/weapons/skinlevels/${itemid}`,
           {
@@ -99,12 +90,13 @@ export default class ValorantAPI {
           }
         )
       ).body.data;
-      arr[i].price = nightShop[i].Offer.Cost[VCurrencies.VP];
-      arr[i].discountPrice = nightShop[i].DiscountCosts[VCurrencies.VP];
-      arr[i].discountPercent = nightShop[i].DiscountPercent;
+      nightMarket[i].price = bonusStore[i].Offer.Cost[VCurrencies.VP];
+      nightMarket[i].discountPrice =
+        bonusStore[i].DiscountCosts[VCurrencies.VP];
+      nightMarket[i].discountPercent = bonusStore[i].DiscountPercent;
     }
 
-    return arr as singleNightMarketItem[];
+    return { shop, bundle, nightMarket };
   }
 
   public async getWallet() {

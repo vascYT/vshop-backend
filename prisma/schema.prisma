@@ -8,15 +8,12 @@ datasource db {
 }
 
 model User {
-  id                    Int      @id @default(autoincrement())
-  riotId                String   @unique
-  shop                  Json?
-  shopRegion            String   @default("eu")
-  lastShopUpdate        DateTime @default(now())
-  nightMarket           Json?
-  nightMarketRegion     String   @default("eu")
-  lastNightMarketUpdate DateTime @default(now())
-  tokens                Token[]
+  id         Int      @id @default(autoincrement())
+  riotId     String   @unique
+  shop       Json?
+  region     String   @default("eu")
+  lastUpdate DateTime @default(now())
+  tokens     Token[]
 
   @@map("users")
 }
