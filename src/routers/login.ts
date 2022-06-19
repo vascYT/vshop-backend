@@ -10,7 +10,7 @@ router.post("/", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    let response: any = await fetch(
+    let response = await fetch(
       "https://auth.riotgames.com/api/v1/authorization",
       {
         method: "POST",
@@ -40,19 +40,19 @@ router.post("/", async (req, res) => {
       }),
     });
 
-    if (response.body.error) {
+    if (response.data.error) {
       res.status(400).json({
         success: false,
-        error: response.body.error,
+        error: response.data.error,
       });
-    } else if (response.body.type === "multifactor") {
+    } else if (response.data.type === "multifactor") {
       res.json({
         mfaRequired: true,
-        mfaEmail: response.body.multifactor.email,
+        mfaEmail: response.data.multifactor.email,
         cookie: response.headers["set-cookie"],
       });
-    } else if (response.body.type === "response") {
-      const accessToken = response.body.response.parameters.uri.match(
+    } else if (response.data.type === "response") {
+      const accessToken = response.data.response.parameters.uri.match(
         /access_token=((?:[a-zA-Z]|\d|\.|-|_)*).*id_token=((?:[a-zA-Z]|\d|\.|-|_)*).*expires_in=(\d*)/
       )[1];
       const entitlementsToken = await getEntitlementsToken(accessToken);
@@ -110,8 +110,8 @@ router.post("/mfa", async (req, res) => {
     }
   );
 
-  if (response.body.type === "response") {
-    const accessToken = response.body.response.parameters.uri.match(
+  if (response.data.type === "response") {
+    const accessToken = response.data.response.parameters.uri.match(
       /access_token=((?:[a-zA-Z]|\d|\.|-|_)*).*id_token=((?:[a-zA-Z]|\d|\.|-|_)*).*expires_in=(\d*)/
     )[1];
     const entitlementsToken = await getEntitlementsToken(accessToken);
@@ -138,8 +138,8 @@ router.post("/mfa", async (req, res) => {
 
     res.json({ success: true, accessToken, entitlementsToken });
     console.log(`${riotId} log in done.`);
-  } else if (response.body.type) {
-    res.status(400).json({ success: false, error: response.body.type });
+  } else if (response.data.type) {
+    res.status(400).json({ success: false, error: response.data.type });
   } else {
     res.status(400).json({ success: false, error: "unknown" });
   }
@@ -156,7 +156,7 @@ const getEntitlementsToken = async (accessToken: string) => {
       },
     }
   );
-  return response.body.entitlements_token;
+  return response.data.entitlements_token;
 };
 
 const getId = async (accessToken: string) => {
@@ -168,7 +168,7 @@ const getId = async (accessToken: string) => {
     },
   });
 
-  return res.body.sub as string;
+  return res.data.sub as string;
 };
 
 export { router, path };

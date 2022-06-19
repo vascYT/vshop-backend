@@ -1,3 +1,4 @@
+import axios from "axios";
 import { Request, Response } from "express";
 import { IncomingHttpHeaders } from "http";
 import https, { Agent } from "https";
@@ -15,59 +16,20 @@ const agent = new Agent({
   minVersion: "TLSv1.2",
 });
 
-export const fetch = (
+export const fetch = async (
   url: string,
   options: { method: string; headers?: object; body?: object | string }
 ) => {
-  return new Promise<{
-    status: number | undefined;
-    headers: IncomingHttpHeaders;
-    body: any;
-  }>((resolve, reject) => {
-    const req = https.request(
-      url,
-      {
-        method: options.method,
-        headers: {
-          ...options.headers,
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
-        },
-        agent: agent,
-      },
-      (res) => {
-        let response = {
-          status: res.statusCode,
-          headers: res.headers,
-          body: "",
-        };
-
-        res.on("data", (chunk) => {
-          response.body += chunk;
-        });
-
-        res.on("end", () => {
-          try {
-            response.body = JSON.parse(response.body);
-          } catch (e) {
-            response.body = response.body;
-          } finally {
-            console.log(
-              `${options.method} request to ${url} done with status code ${response.status}`
-            );
-            resolve(response);
-          }
-        });
-      }
-    );
-
-    req.on("error", (err) => {
-      reject(err);
-    });
-
-    if (options.body) req.write(options.body);
-    req.end();
+  const res = await axios({
+    method: options.method,
+    headers: options.headers as any,
+    data: options.body,
+    url,
+    httpsAgent: agent,
   });
+
+  console.log(`${options.method} ${url}, status: ${res.status}`);
+  return res;
 };
 
 export const VCurrencies = {

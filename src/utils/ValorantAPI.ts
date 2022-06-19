@@ -41,12 +41,12 @@ export default class ValorantAPI {
 
     /* SHOP */
     let offers: { [offerId: string]: number } = {};
-    for (var i = 0; i < res2.body.Offers.length; i++) {
-      const offer = res2.body.Offers[i];
+    for (var i = 0; i < res2.data.Offers.length; i++) {
+      const offer = res2.data.Offers[i];
       offers[offer.OfferID] = offer.Cost[VCurrencies.VP];
     }
 
-    let singleItemOffers = res.body.SkinsPanelLayout.SingleItemOffers;
+    let singleItemOffers = res.data.SkinsPanelLayout.SingleItemOffers;
     let shop: singleItem[] = [];
     for (var i = 0; i < singleItemOffers.length; i++) {
       shop[i] = (
@@ -56,27 +56,27 @@ export default class ValorantAPI {
             method: "GET",
           }
         )
-      ).body.data;
+      ).data;
       shop[i].price = offers[shop[i].uuid];
     }
 
     /* BUNDLE */
     let bundle: Bundle = (
       await fetch(
-        `https://valorant-api.com/v1/bundles/${res.body.FeaturedBundle.Bundle.DataAssetID}`,
+        `https://valorant-api.com/v1/bundles/${res.data.FeaturedBundle.Bundle.DataAssetID}`,
         {
           method: "GET",
         }
       )
-    ).body.data;
+    ).data;
 
-    bundle.price = res.body.FeaturedBundle.Bundle.Items.map(
+    bundle.price = res.data.FeaturedBundle.Bundle.Items.map(
       (item: any) => item.DiscountedPrice
     ).reduce((a: any, b: any) => a + b);
 
     /* NIGHT MARKET */
-    const bonusStore = res.body.BonusStore
-      ? res.body.BonusStore.BonusStoreOffers
+    const bonusStore = res.data.BonusStore
+      ? res.data.BonusStore.BonusStoreOffers
       : [];
 
     let nightMarket = [];
@@ -89,7 +89,7 @@ export default class ValorantAPI {
             method: "GET",
           }
         )
-      ).body.data;
+      ).data;
       nightMarket[i].price = bonusStore[i].Offer.Cost[VCurrencies.VP];
       nightMarket[i].discountPrice =
         bonusStore[i].DiscountCosts[VCurrencies.VP];
@@ -110,9 +110,9 @@ export default class ValorantAPI {
     });
 
     return {
-      vp: res.body.Balances[VCurrencies.VP],
-      rad: res.body.Balances[VCurrencies.RAD],
-      fag: res.body.Balances[VCurrencies.FAG],
+      vp: res.data.Balances[VCurrencies.VP],
+      rad: res.data.Balances[VCurrencies.RAD],
+      fag: res.data.Balances[VCurrencies.FAG],
     };
   }
 
@@ -127,8 +127,8 @@ export default class ValorantAPI {
     });
 
     return {
-      level: res.body.Progress.Level,
-      xp: res.body.Progress.XP,
+      level: res.data.Progress.Level,
+      xp: res.data.Progress.XP,
     };
   }
 
