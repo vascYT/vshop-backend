@@ -1,25 +1,19 @@
 import { Request, Response } from "express";
 import { IncomingHttpHeaders } from "http";
-import https from "https";
+import https, { Agent } from "https";
 
-// credit for tlsCiphers: skinPeek (https://github.com/giorgi-o/SkinPeek/blob/f26d84533b10419399010db63db00a6e9a5dd420/misc/util.js#L4)
-const tlsCiphers = [
+// credits: https://github.com/ev3nvy/valorant-reauth-script/blob/f79a5efd3ecd7757bafa7f63a1d9ca579bd1bc58/index.js#L19
+const ciphers = [
+  "TLS_CHACHA20_POLY1305_SHA256",
   "TLS_AES_128_GCM_SHA256",
   "TLS_AES_256_GCM_SHA384",
-  "TLS_CHACHA20_POLY1305_SHA256",
-  "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
-  "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
-  "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
-  "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
   "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256",
-  "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256",
-  "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
-  "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
-  "TLS_RSA_WITH_AES_128_GCM_SHA256",
-  "TLS_RSA_WITH_AES_256_GCM_SHA384",
-  "TLS_RSA_WITH_AES_128_CBC_SHA",
-  "TLS_RSA_WITH_AES_256_CBC_SHA",
 ];
+const agent = new Agent({
+  ciphers: ciphers.join(":"),
+  honorCipherOrder: true,
+  minVersion: "TLSv1.2",
+});
 
 export const fetch = (
   url: string,
@@ -39,7 +33,7 @@ export const fetch = (
           "User-Agent":
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
         },
-        ciphers: tlsCiphers.join(":"),
+        agent: agent,
       },
       (res) => {
         let response = {
