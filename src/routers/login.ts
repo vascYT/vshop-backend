@@ -1,10 +1,9 @@
-import { PrismaClient } from "@prisma/client";
 import express from "express";
+import { setRiotId } from "../Redis";
 import { fetch } from "../utils/misc";
 
 const router = express.Router();
 const path = "/login";
-const prisma = new PrismaClient();
 
 router.post("/", async (req, res) => {
   const { username, password } = req.body;
@@ -58,24 +57,8 @@ router.post("/", async (req, res) => {
       const entitlementsToken = await getEntitlementsToken(accessToken);
       const riotId = await getId(accessToken);
 
-      // Create user if not exists
-      await prisma.user.upsert({
-        where: {
-          riotId,
-        },
-        create: {
-          riotId,
-        },
-        update: {},
-      });
-
-      // Link obtained accessToken to user profile
-      await prisma.token.create({
-        data: {
-          token: accessToken,
-          riotId,
-        },
-      });
+      // Cache token
+      await setRiotId(accessToken, riotId);
 
       res.json({
         success: true,
@@ -117,24 +100,8 @@ router.post("/mfa", async (req, res) => {
     const entitlementsToken = await getEntitlementsToken(accessToken);
     const riotId = await getId(accessToken);
 
-    // Create user if not exists
-    await prisma.user.upsert({
-      where: {
-        riotId,
-      },
-      create: {
-        riotId,
-      },
-      update: {},
-    });
-
-    // Link obtained accessToken to user profile
-    await prisma.token.create({
-      data: {
-        token: accessToken,
-        riotId,
-      },
-    });
+    // Cache token
+    await setRiotId(accessToken, riotId);
 
     res.json({ success: true, accessToken, entitlementsToken });
     console.log(`${riotId} log in done.`);

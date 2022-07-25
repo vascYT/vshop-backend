@@ -1,35 +1,76 @@
 import axios from "axios";
 import { Request, Response } from "express";
-import { IncomingHttpHeaders } from "http";
-import https, { Agent } from "https";
+import { Agent } from "https";
+import { SocksProxyAgent } from "socks-proxy-agent";
 
-// credits: https://github.com/ev3nvy/valorant-reauth-script/blob/f79a5efd3ecd7757bafa7f63a1d9ca579bd1bc58/index.js#L19
-const ciphers = [
-  "TLS_CHACHA20_POLY1305_SHA256",
-  "TLS_AES_128_GCM_SHA256",
-  "TLS_AES_256_GCM_SHA384",
-  "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256",
-];
+const ciphers = ["TLS_AES_128_GCM_SHA256"];
+const socksUrl = `socks5://${process.env.PROXY_USERNAME}:${process.env.PROXY_PASSWORD}@${process.env.PROXY_HOST}:${process.env.PROXY_PORT}`;
+const userAgent =
+  "RiotClient/43.0.1.4195386.4190634 rso-auth (Windows; 10;;Professional, x64)";
+const clientVersion = "release-04.11-shipping-7-720199";
+const clientPlatform = {
+  Type: "PC",
+  OS: "Windows",
+  Version: "10.0.19043.1.256.64bit",
+  Chipset: "Unknown",
+};
+
 const agent = new Agent({
   ciphers: ciphers.join(":"),
   honorCipherOrder: true,
-  minVersion: "TLSv1.2",
+  minVersion: "TLSv1.3",
+  keepAlive: true,
 });
 
+let httpsAgent = new SocksProxyAgent(socksUrl);
+httpsAgent.options = {
+  ciphers: ciphers.join(":"),
+  honorCipherOrder: true,
+  minVersion: "TLSv1.3",
+  keepAlive: true,
+};
+
+let httpAgent = new SocksProxyAgent(socksUrl);
+httpAgent.options = {
+  keepAlive: true,
+};
+
+let fetchPaused = false;
 export const fetch = async (
   url: string,
   options: { method: string; headers?: object; body?: object | string }
 ) => {
-  const res = await axios({
-    method: options.method,
-    headers: options.headers as any,
-    data: options.body,
-    url,
-    httpsAgent: agent,
-  });
-
-  console.log(`${options.method} ${url}, status: ${res.status}`);
-  return res;
+  if (!fetchPaused) {
+    const res = await axios({
+      method: options.method,
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": userAgent,
+        "X-ClientVersion": clientVersion,
+        "X-ClientPlatform": Buffer.from(
+          JSON.stringify(clientPlatform)
+        ).toString("base64"),
+        ...options.headers,
+      },
+      data: options.body,
+      url,
+      httpsAgent: agent,
+    });
+    if (res.status === 429) {
+      fetchPaused = true;
+      console.log("Rate limited by server, pausing fetch...");
+      console.log(res.headers);
+      setTimeout(() => {
+        fetchPaused = false;
+        console.log("Resuming fetch...");
+      }, Number.parseInt(res.headers["retry-after"]));
+    } else {
+      console.log(`${options.method} ${url}, status: ${res.status}`);
+    }
+    return res;
+  } else {
+    throw "fetch paused";
+  }
 };
 
 export const VCurrencies = {

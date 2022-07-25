@@ -34,8 +34,8 @@ export default class ExpressApp {
     });
     app.use("/login", loginLimiter);
 
-    app.listen(process.env.PORT || 3000, () => {
-      console.log(`🆙 Listening http://localhost:${process.env.PORT || 3000}`);
+    app.listen(process.env.PORT || 3333, () => {
+      console.log(`🆙 Listening http://localhost:${process.env.PORT || 3333}`);
     });
   }
 
