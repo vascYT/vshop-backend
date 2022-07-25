@@ -1,10 +1,7 @@
 import axios from "axios";
 import { Request, Response } from "express";
 import { Agent } from "https";
-import { SocksProxyAgent } from "socks-proxy-agent";
 
-const ciphers = ["TLS_AES_128_GCM_SHA256"];
-const socksUrl = `socks5://${process.env.PROXY_USERNAME}:${process.env.PROXY_PASSWORD}@${process.env.PROXY_HOST}:${process.env.PROXY_PORT}`;
 const userAgent =
   "RiotClient/43.0.1.4195386.4190634 rso-auth (Windows; 10;;Professional, x64)";
 const clientVersion = "release-04.11-shipping-7-720199";
@@ -15,25 +12,13 @@ const clientPlatform = {
   Chipset: "Unknown",
 };
 
+const ciphers = ["TLS_AES_128_GCM_SHA256"];
 const agent = new Agent({
   ciphers: ciphers.join(":"),
   honorCipherOrder: true,
   minVersion: "TLSv1.3",
   keepAlive: true,
 });
-
-let httpsAgent = new SocksProxyAgent(socksUrl);
-httpsAgent.options = {
-  ciphers: ciphers.join(":"),
-  honorCipherOrder: true,
-  minVersion: "TLSv1.3",
-  keepAlive: true,
-};
-
-let httpAgent = new SocksProxyAgent(socksUrl);
-httpAgent.options = {
-  keepAlive: true,
-};
 
 let fetchPaused = false;
 export const fetch = async (
